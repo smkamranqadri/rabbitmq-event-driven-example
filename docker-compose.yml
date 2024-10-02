@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - '5672:5672' # RabbitMQ port
+      - '15672:15672' # Management UI
+    networks:
+      - app_network
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    profiles:
+      - dev
+      - prod
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server.prod
+    container_name: server
+    ports:
+      - '3000:3000'
+    networks:
+      - app_network
+    environment:
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    depends_on:
+      - rabbitmq
+    profiles:
+      - prod
+
+  server-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.server.dev
+    container_name: server-dev
+    ports:
+      - '3000:3000'
+    networks:
+      - app_network
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    environment:
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    depends_on:
+      - rabbitmq
+    profiles:
+      - dev
+
+  consumers:
+    build:
+      context: .
+      dockerfile: Dockerfile.consumers.prod
+    container_name: consumers
+    networks:
+      - app_network
+    environment:
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    depends_on:
+      - rabbitmq
+    profiles:
+      - prod
+
+  consumers-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.consumers.dev
+    container_name: consumers-dev
+    networks:
+      - app_network
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    environment:
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    depends_on:
+      - rabbitmq
+    profiles:
+      - dev
+
+volumes:
+  rabbitmq_data:
+
+networks:
+  app_network:
+    driver: bridge

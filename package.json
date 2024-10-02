@@ -1,0 +1,22 @@
+{
+  "name": "rabbitmq-event-driven-example",
+  "version": "1.0.0",
+  "description": "Example of using RabbitMQ for event driven architecture",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js --ignore data.json",
+    "start:consumers": "node consumers/index.js",
+    "dev:consumers": "nodemon consumers/index.js --ignore data.json"
+  },
+  "author": "Kamran Qadri",
+  "license": "MIT",
+  "dependencies": {
+    "amqplib": "^0.10.3",
+    "express": "^4.18.2",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
